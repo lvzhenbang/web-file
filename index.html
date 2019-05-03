@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>file</title>
+  <style>
+    canvas {
+      background-color: transparent;
+    }
+    .btn {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <button class="btn">download</button>
+  <canvas id="canvas"></canvas>
+  <script src="./js/filesaver.js"></script>
+  <script src="./js/canvas.js"></script>
+  <script>
+    var btn = document.querySelector('.btn');
+    var canvas = document.querySelector('#canvas');
+    // canvas init
+    var cas = new Canvas(canvas, {
+      width: 300,
+      height: 250
+    });
+    
+    // to dataURL
+    var mimeType = 'image/webp';
+    var dataURL = canvas.toDataURL(mimeType, 1);
+    function base64Toblob(data, mimeType) {
+      var baseStr = atob(data.split('base64,')[1]);
+      var len = baseStr.length;
+      var unit8Array = new Uint8Array(len);
+      while(len--) {
+        unit8Array[len] = baseStr.charCodeAt(len); 
+      }
+      return new Blob([unit8Array], { type: mimeType})
+    }
+    // download
+    btn.onclick = function() {
+      // save
+      // var nWindow = window.open();
+      // nWindow.document.body.innerHTML = `<img src='${dataURL}'>`;
+      saveAs(base64Toblob(dataURL, mimeType), 'apple')
+    }
+  </script>
+</body>
+</html>
