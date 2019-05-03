@@ -9,20 +9,25 @@
     canvas {
       background-color: transparent;
     }
-    .btn {
+    .control {
       position: fixed;
       bottom: 0;
       left: 0;
+      padding: 20px;
     }
   </style>
 </head>
 <body>
-  <button class="btn">download</button>
+  <div class="control">
+    <button class="btn">download</button>
+    <button class="btn2">download2</button>
+  </div>
   <canvas id="canvas"></canvas>
   <script src="./js/filesaver.js"></script>
   <script src="./js/canvas.js"></script>
   <script>
     var btn = document.querySelector('.btn');
+    var btn2 = document.querySelector('.btn2');
     var canvas = document.querySelector('#canvas');
     // canvas init
     var cas = new Canvas(canvas, {
@@ -45,9 +50,11 @@
     // download
     btn.onclick = function() {
       // save
-      // var nWindow = window.open();
-      // nWindow.document.body.innerHTML = `<img src='${dataURL}'>`;
       saveAs(base64Toblob(dataURL, mimeType), 'apple')
+    }
+    btn2.onclick = function() {
+      var nWindow = window.open();
+      nWindow.document.body.innerHTML = `<img src='${dataURL}'>`;
     }
   </script>
 </body>
