@@ -1,0 +1,11 @@
+{
+  "name": "web-file",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/lvzhenbang/web-file.git",
+  "author": "lvzhenbang <lvzhenbang@outlook.com>",
+  "license": "BSD",
+  "scripts": {
+    "deploy": "git checkout -b gh-pages && git push origin gh-pages:gh-pages && git checkout master && git branch -D gh-pages"
+  }
+}
