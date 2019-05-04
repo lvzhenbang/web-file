@@ -15,12 +15,12 @@ class Canvas {
   }
 
   init() {
-    this.ctx.width = this.opt.width;
-    this.ctx.height = this.opt.height;
+    this.el.width = this.opt.width;
+    this.el.height = this.opt.height;
     this.render(this.ctx);
   }
   render(ctx) {
     ctx.fillStyle = 'red';
-    ctx.fillRect(10, 10, 100, 100);
+    ctx.fillRect(0, 0, 100, 650);
   }
 }

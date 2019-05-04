@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>upload</title>
+  <style>
+    input[type="file"] {
+      -webkit-appearance: unset;
+      appearance: unset;
+    }
+
+    .upload {
+      position: relative;
+
+      width: 100px;
+      height: 100px;
+      line-height: 100px;
+      border-radius: 4px;
+      overflow: hidden;
+
+      font-size: 16px;
+      color: #fff;
+      text-align: center;
+      background: blueviolet;
+    }
+
+    .upload>input {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+
+      display: inline-block;
+      opacity: 0;
+      -ms-filter: "alpha(opacity=0)";
+
+      cursor: pointer;
+    }
+    /* upload preview */
+    .preview {
+      border: 1px dotted #cccccc;
+      padding: 20px;
+      padding-left: 0;
+      padding-bottom: 0;
+      margin-top: 20px;
+
+      display: flex;
+    }
+
+    .preview .box {
+      position: relative;
+
+      display: flex;
+      align-items: center;
+
+      padding: 30px;
+      margin-left: 20px;
+      margin-bottom: 20px;
+      font-size: 0;
+      border: 1px solid #cdcdcd;
+      border-radius: 2px;
+    }
+
+    .preview .box .control {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+
+      padding: .25em;
+      font-size: 12px;
+      border: 1px solid #000;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    /* poster preview */
+    .poster {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+
+      padding: 60px;
+      background-color: rgba(0, 0, 0, .8);
+    }
+
+    .poster .canvas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      -webkit-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+    }
+
+    .poster .close {
+      position: absolute;
+      top: 0;
+      right: 0;
+
+      width: 60px;
+      height: 60px;
+      background-image: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0xOSA2LjQxTDE3LjU5IDUgMTIgMTAuNTkgNi40MSA1IDUgNi40MSAxMC41OSAxMiA1IDE3LjU5IDYuNDEgMTkgMTIgMTMuNDEgMTcuNTkgMTkgMTkgMTcuNTkgMTMuNDEgMTJ6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPgo=");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 20px 20px;
+
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="upload">
+    <input id="upload" type="file" name="avatar" accept="image/*, video/*">上传
+  </div>
+  <div class="preview"></div>
+  <script>
+    var input = document.querySelector('#upload');
+    input.addEventListener('change', function () {
+      var priview = document.querySelector('.preview');
+      var file = this.files[0];
+      var type = getType(file);
+      var box = document.createElement('div');
+      box.classList.add('box');
+      var el = null;
+      if (type === 'image') {
+        el = createImg(file);
+        box.appendChild(el);
+      }
+
+      if (type === 'video') {
+        var control = document.createElement('span')
+        control.classList.add('control');
+        control.innerText = 'create poster';
+        control.onclick = createPoster;
+        el = createVideo(file);
+
+        box.appendChild(el);
+        box.appendChild(control);
+      }
+      priview.appendChild(box);
+    })
+
+    function getType(file) {
+      return file.type.split('/')[0]
+    }
+
+    function createImg(file) {
+      var img = document.createElement('img');
+      img.src = window.URL.createObjectURL(file);
+      img.width = 200;
+      img.height = 200;
+      return img;
+    }
+
+    function createVideo(file) {
+      var video = document.createElement('video');
+      video.width = 200;
+      video.preload = 'metadata';
+      var source = document.createElement('source');
+      video.controls = true;
+      source.src = window.URL.createObjectURL(file);
+      source.type = file.type;
+      video.appendChild(source);
+      return video;
+    }
+
+    function createPoster() {
+      var poster = document.querySelector('.poster') || createEl('div', 'poster');
+      var close = poster.querySelector('.close') || createEl('div', 'close');
+      var canvas = poster.querySelector('.canvas') || createEl('canvas', 'canvas');
+      var video = this.parentNode.querySelector('video');
+      poster.style.display = 'block';
+      var w = video.width;
+      var h = 112;
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(video, 0, 0, w, 112);
+
+      poster.appendChild(close);
+      poster.appendChild(canvas);
+      document.body.appendChild(poster);
+
+      close.onclick = function () {
+        console.log(1)
+        poster.style.display = 'none';
+      }
+    }
+
+    function createEl(tagName, className) {
+      var el = document.createElement(tagName);
+      el.classList.add(className);
+      return el;
+    }
+  </script>
+</body>
+
+</html>
