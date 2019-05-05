@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>调用本地相机/摄像头</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      html,body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: #fdfdfd;
+      }
+      .control {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 9998;
+        
+        padding: 0 20px;
+      }
+      .btn {
+        padding: 6px 16px;
+        font: 16px/16px '';
+
+        color: #333333;
+      }
+      video {
+        width: 100vw;
+        height: 100vh;
+      }
+      /* poster preview */
+      .poster {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 9999;
+
+        padding: 60px;
+        background-color: rgba(0, 0, 0, .8);
+      }
+
+      .poster .canvas {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+      }
+
+      .poster .close {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        width: 60px;
+        height: 60px;
+        background-image: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0xOSA2LjQxTDE3LjU5IDUgMTIgMTAuNTkgNi40MSA1IDUgNi40MSAxMC41OSAxMiA1IDE3LjU5IDYuNDEgMTkgMTIgMTMuNDEgMTcuNTkgMTkgMTkgMTcuNTkgMTMuNDEgMTJ6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPgo=");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 20px 20px;
+
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="control">
+      <button class="btn camera">camera</button>
+      <button class="btn recorder">开始</button>
+    </div>
+    <video autoplay></video>
+    <script>
+      function base64Toblob(data, mimeType) {
+        var baseStr = atob(data.split('base64,')[1]);
+        var len = baseStr.length;
+        var unit8Array = new Uint8Array(len);
+        while(len--) {
+          unit8Array[len] = baseStr.charCodeAt(len); 
+        }
+        return new Blob([unit8Array], { type: mimeType})
+      }
+      var constraints = {
+        audio: false,
+        video: true
+      };
+
+      navigator
+        .mediaDevices
+        .getUserMedia(constraints)
+        .then(function(stream) {
+          var recorder = document.querySelector('.recorder');
+          var camera = document.querySelector('.camera');
+          var video = document.querySelector('video');
+          video.srcObject = stream;
+          var re = new Recorder(video, stream);
+          // video recorder
+          recorder.addEventListener('click', function() {
+            if (!re.isRecording) {
+              re.start()
+              this.innerText = '结束'
+            } else {
+              re.stop()
+              this.innerText = '开始'
+            }
+          });
+          // camera
+          camera.addEventListener('click', function() {
+            re.createPoster()
+          })
+        });
+
+      class Recorder {
+        constructor(video, stream) {
+          this.video = video;
+          this.recorder = new MediaRecorder(stream);
+          this.recorderChunk = [];
+          this.isRecording = false;
+        }
+        // start recorder
+        start() {
+          this
+            .recorder
+            .addEventListener(
+              "dataavailable",
+              (e) => {
+                this.recorderChunk.push(e.data)
+              }
+          );
+          this.isRecording = !this.isRecording;
+          this.recorder.start();
+        }
+        // stop recorder
+        stop() {
+          this.isRecording = !this.isRecording;
+          this.recorder.stop();
+          // 异步的`"dataavailable`处理
+          setTimeout(() => {
+            this.createPoster();
+          }, 1000)
+        }
+        // fetch video
+        getVideo() {
+          console.log(this.recorderChunk)
+          this.type = this.recorderChunk[0] && this.recorderChunk[0].type;
+          let name = 'webcam-' + Date.now() + '.' + this.type.split(';.')[1];
+          return {
+            name: name,
+            type: this.type,
+            data: new Blob(this.recorderChunk, { type: this.type })
+          }
+        }
+        // fetch image
+        getImage() {
+          let name = 'webcam-' + Date.now() + '.jpg';
+          let mimeType = 'image/jpeg';
+          let w = this.video.videoWidth;
+          let h = this.video.videoHeight;
+          let canvas = document.createElement("canvas");
+          
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(this.video, 0, 0, w, h);
+          let dataURL = canvas.toDataURL(mimeType);
+
+          return {
+            name: name,
+            data: base64Toblob(dataURL, mimeType),
+            type: mimeType
+          }
+        }
+        
+        createPoster() {
+          var poster = this.createEl('div', 'poster');
+          var close = this.createEl('div', 'close');
+          var el = null;
+          if (this.type === 'image/jpeg') {
+            el = this.createEl('img', 'canvas');
+             el.src = window.URL.createObjectURL(this.getImage().data);
+          } else {
+            el = this.createEl('video', 'canvas');
+            el.src = window.URL.createObjectURL(this.getVideo().data);
+            el.controls = true;
+          }
+          el.width = this.video.videoWidth;
+          el.height = this.video.videoHeight;
+          poster.appendChild(el);
+          poster.appendChild(close);
+          document.body.appendChild(poster);
+
+          close.onclick = function () {
+            document.body.removeChild(poster);
+          }
+        }
+
+        createEl(tagName, className) {
+          var el = document.createElement(tagName);
+          el.classList.add(className);
+          return el;
+        }
+      }
+    </script>
+  </body>
+</html>
