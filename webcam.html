@@ -101,6 +101,7 @@
           var re = new Recorder(video, stream);
           // video recorder
           recorder.addEventListener('click', function() {
+            re.type = 'video/webcam';
             if (!re.isRecording) {
               re.start()
               this.innerText = '结束'
@@ -111,6 +112,7 @@
           });
           // camera
           camera.addEventListener('click', function() {
+            re.type = 'image/jpeg';
             re.createPoster()
           })
         });
@@ -141,13 +143,14 @@
           this.recorder.stop();
           // 异步的`"dataavailable`处理
           setTimeout(() => {
+            if (!this.type) {
+              this.type = (this.recorderChunk[0] && this.recorderChunk[0].type)
+            }
             this.createPoster();
           }, 1000)
         }
         // fetch video
         getVideo() {
-          console.log(this.recorderChunk)
-          this.type = this.recorderChunk[0] && this.recorderChunk[0].type;
           let name = 'webcam-' + Date.now() + '.' + this.type.split(';.')[1];
           return {
             name: name,
@@ -158,20 +161,19 @@
         // fetch image
         getImage() {
           let name = 'webcam-' + Date.now() + '.jpg';
-          let mimeType = 'image/jpeg';
           let w = this.video.videoWidth;
           let h = this.video.videoHeight;
-          let canvas = document.createElement("canvas");
+          let canvas = this.createEl('canvas', 'img');
           
           canvas.width = w;
           canvas.height = h;
           canvas.getContext('2d').drawImage(this.video, 0, 0, w, h);
-          let dataURL = canvas.toDataURL(mimeType);
+          let dataURL = canvas.toDataURL(this.ype);
 
           return {
             name: name,
-            data: base64Toblob(dataURL, mimeType),
-            type: mimeType
+            data: base64Toblob(dataURL, this.type),
+            type: this.type
           }
         }
         
