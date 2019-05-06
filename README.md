@@ -1,26 +1,9 @@
 # web-file
 
-## FileReader
+## 知识点
 
-异步操作`file`或`blob`（指的是存储在本地计算机上的）。
+* [` FileReader `](./doc/file.reader.md) 异步处理`File`(通过`input`元素上传后得到的是一个`FileList`数组，而它的元素为`File`)
 
-注：`input`元素获取上传的`file`（FileList）
-
-```
-var reader = new FileReader();
-// 操作成功
-reader.onload = function() {
-
-}
-// 上传进度
-reader.onprogress = function() {
-
-}
-// 上传失败
-reader.onerror = function() {
-
-}
-```
 
 ## demo
 

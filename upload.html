@@ -121,29 +121,35 @@
   </div>
   <div class="preview"></div>
   <script>
-    var input = document.querySelector('#upload');
+    let input = document.querySelector('#upload');
+    let reader = new FileReader();
+
     input.addEventListener('change', function () {
-      var priview = document.querySelector('.preview');
-      var file = this.files[0];
-      var type = getType(file);
-      var box = document.createElement('div');
+      let priview = document.querySelector('.preview');
+      let file = this.files[0];
+      let type = getType(file);
+      let box = document.createElement('div');
       box.classList.add('box');
-      var el = null;
-      if (type === 'image') {
-        el = createImg(file);
-        box.appendChild(el);
-      }
+      let el = null;
+      reader.readAsDataURL(file);
+      reader.onload = function(e) {
+        let file = e.target.result || e.srcElement.result;
+        if (type === 'image') {
+          el = createImg(file);
+          box.appendChild(el);
+        }
+        if (type === 'video') {
+          let control = document.createElement('span')
+          control.classList.add('control');
+          control.innerText = 'create poster';
+          control.onclick = createPoster;
+          el = createVideo(file);
 
-      if (type === 'video') {
-        var control = document.createElement('span')
-        control.classList.add('control');
-        control.innerText = 'create poster';
-        control.onclick = createPoster;
-        el = createVideo(file);
-
-        box.appendChild(el);
-        box.appendChild(control);
+          box.appendChild(el);
+          box.appendChild(control);
+        }
       }
+      
       priview.appendChild(box);
     })
 
@@ -152,49 +158,45 @@
     }
 
     function createImg(file) {
-      var img = document.createElement('img');
-      img.src = window.URL.createObjectURL(file);
+      let img = createEl('img');
       img.width = 200;
       img.height = 200;
+      img.src = file;
       return img;
     }
 
     function createVideo(file) {
-      var video = document.createElement('video');
+      let video = createEl('video');
       video.width = 200;
       video.preload = 'metadata';
-      var source = document.createElement('source');
       video.controls = true;
-      source.src = window.URL.createObjectURL(file);
-      source.type = file.type;
-      video.appendChild(source);
+      video.src = file;
       return video;
     }
 
     function createPoster() {
-      var poster = document.querySelector('.poster') || createEl('div', 'poster');
-      var close = poster.querySelector('.close') || createEl('div', 'close');
-      var canvas = poster.querySelector('.canvas') || createEl('canvas', 'canvas');
-      var video = this.parentNode.querySelector('video');
-      poster.style.display = 'block';
-      var w = video.width;
-      var h = 112;
+      let poster = createEl('div', 'poster');
+      let close = createEl('div', 'close');
+      let canvas = createEl('canvas', 'canvas');
+      let video = this.parentNode.querySelector('video');
+      let w = video.videoWidth;
+      let h = video.videoHeight;
       canvas.width = w;
       canvas.height = h;
-      canvas.getContext('2d').drawImage(video, 0, 0, w, 112);
+      canvas.getContext('2d').drawImage(video, 0, 0, w, h);
 
       poster.appendChild(close);
       poster.appendChild(canvas);
       document.body.appendChild(poster);
 
       close.onclick = function () {
-        poster.style.display = 'none';
+        document.body.removeChild(poster);
       }
     }
 
     function createEl(tagName, className) {
-      var el = document.createElement(tagName);
-      el.classList.add(className);
+      let el = document.createElement(tagName);
+      className ? el.classList.add(className) : '';
       return el;
     }
   </script>
