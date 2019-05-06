@@ -24,6 +24,6 @@ reader.onerror = function() {
 
 ## demo
 
-* [`上传文件`](./upload.html)
-* [`下载文件`](./download.html)
-* [`调用摄像头处理图片`](./webcam.html)
+* [`上传文件`](https://lvzhenbang.github.io/web-file/upload.html)
+* [`下载文件`](https://lvzhenbang.github.io/web-file/download.html)
+* [`调用摄像头处理图片`](https://lvzhenbang.github.io/web-file/webcam.html)
